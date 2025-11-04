@@ -1,0 +1,468 @@
+-- GUI + FLY COMPLETO 🩷 
+
+local main = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local up = Instance.new("TextButton")
+local down = Instance.new("TextButton")
+local onof = Instance.new("TextButton")
+local TextLabel = Instance.new("TextLabel")
+local plus = Instance.new("TextButton")
+local speed = Instance.new("TextLabel")
+local mine = Instance.new("TextButton")
+local closebutton = Instance.new("TextButton")
+local mini = Instance.new("TextButton")
+local mini2 = Instance.new("TextButton")
+
+-- Serviços
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- Variáveis de Lógica
+local speeds = 1
+local nowe = false -- Estado do fly (on/off)
+
+-- VARIAVEIS DE CONTROLE DE MOVIMENTO VERTICAL (GLOBAL)
+local tis -- Conexão para UP
+local dis -- Conexão para DOWN
+
+-- Função para bordas arredondadas
+local function roundify(obj, radius)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius)
+	corner.Parent = obj
+end
+
+-- Função de Animação (TweenService)
+local function resizeFrame(frame, open)
+	local goal = {}
+	if open then
+		goal.Size = UDim2.new(0, 190, 0, 57)
+	else
+		goal.Size = UDim2.new(0, 190, 0, 30)
+	end
+	local tween = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal)
+	tween:Play()
+end
+
+local function fade(obj, visible)
+	local goal = {}
+	if visible then
+		obj.Visible = true
+		goal.BackgroundTransparency = 0
+		if obj:IsA("TextButton") or obj:IsA("TextLabel") then
+			goal.TextTransparency = 0
+		end
+	else
+		goal.BackgroundTransparency = 1
+		if obj:IsA("TextButton") or obj:IsA("TextLabel") then
+			goal.TextTransparency = 1
+		end
+	end
+	local tween = TweenService:Create(obj, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal)
+	tween:Play()
+	if not visible then
+		task.delay(0.3, function()
+			obj.Visible = false
+		end)
+	end
+end
+
+-- --- CONFIGURAÇÃO DO GUI ---
+
+main.Name = "main"
+main.Parent = LocalPlayer:WaitForChild("PlayerGui")
+main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+main.ResetOnSpawn = false
+
+Frame.Parent = main
+Frame.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
+Frame.BorderColor3 = Color3.fromRGB(255, 182, 193)
+Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
+Frame.Size = UDim2.new(0, 190, 0, 57)
+roundify(Frame, 12)
+Frame.Active = true -- Para arrastar
+Frame.Draggable = true
+
+-- BOTÕES E LABELS
+up.Name = "up"
+up.Parent = Frame
+up.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+up.Size = UDim2.new(0, 44, 0, 28)
+up.Font = Enum.Font.SourceSans
+up.Text = "UP"
+up.TextColor3 = Color3.fromRGB(255, 255, 255)
+up.TextSize = 14.000
+roundify(up, 8)
+
+down.Name = "down"
+down.Parent = Frame
+down.BackgroundColor3 = Color3.fromRGB(255, 192, 203)
+down.Position = UDim2.new(0, 0, 0.491228074, 0)
+down.Size = UDim2.new(0, 44, 0, 28)
+down.Font = Enum.Font.SourceSans
+down.Text = "DOWN"
+down.TextColor3 = Color3.fromRGB(255, 255, 255)
+down.TextSize = 14.000
+roundify(down, 8)
+
+onof.Name = "onof"
+onof.Parent = Frame
+onof.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+onof.Position = UDim2.new(0.702823281, 0, 0.491228074, 0)
+onof.Size = UDim2.new(0, 56, 0, 28)
+onof.Font = Enum.Font.SourceSans
+onof.Text = "fly"
+onof.TextColor3 = Color3.fromRGB(255, 255, 255)
+onof.TextSize = 14.000
+roundify(onof, 8)
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 228, 235)
+TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 100, 0, 28)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "FLY GUI V3"
+TextLabel.TextColor3 = Color3.fromRGB(255, 105, 180)
+TextLabel.TextScaled = true
+TextLabel.TextSize = 14.000
+TextLabel.TextWrapped = true
+roundify(TextLabel, 8)
+
+plus.Name = "plus"
+plus.Parent = Frame
+plus.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+plus.Position = UDim2.new(0.231578946, 0, 0, 0)
+plus.Size = UDim2.new(0, 45, 0, 28)
+plus.Font = Enum.Font.SourceSans
+plus.Text = "+"
+plus.TextColor3 = Color3.fromRGB(255, 255, 255)
+plus.TextScaled = true
+plus.TextSize = 14.000
+plus.TextWrapped = true
+roundify(plus, 8)
+
+speed.Name = "speed"
+speed.Parent = Frame
+speed.BackgroundColor3 = Color3.fromRGB(255, 228, 235)
+speed.Position = UDim2.new(0.468421042, 0, 0.491228074, 0)
+speed.Size = UDim2.new(0, 44, 0, 28)
+speed.Font = Enum.Font.SourceSans
+speed.Text = tostring(speeds)
+speed.TextColor3 = Color3.fromRGB(255, 105, 180)
+speed.TextScaled = true
+speed.TextSize = 14.000
+speed.TextWrapped = true
+roundify(speed, 8)
+
+mine.Name = "mine"
+mine.Parent = Frame
+mine.BackgroundColor3 = Color3.fromRGB(255, 192, 203)
+mine.Position = UDim2.new(0.231578946, 0, 0.491228074, 0)
+mine.Size = UDim2.new(0, 45, 0, 29)
+mine.Font = Enum.Font.SourceSans
+mine.Text = "-"
+mine.TextColor3 = Color3.fromRGB(255, 255, 255)
+mine.TextScaled = true
+mine.TextSize = 14.000
+mine.TextWrapped = true
+roundify(mine, 8)
+
+-- BOTÕES SUPERIORES (Posição corrigida: Eles ficam *acima* do Frame principal)
+closebutton.Name = "Close"
+closebutton.Parent = Frame
+closebutton.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+closebutton.Font = Enum.Font.SourceSans
+closebutton.Size = UDim2.new(0, 45, 0, 28)
+closebutton.Text = "X"
+closebutton.TextSize = 30
+closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- POSIÇÃO CORRIGIDA: Canto superior direito do Frame - 45 (tamanho do botão)
+closebutton.Position = UDim2.new(1, -45, 0, -30) 
+roundify(closebutton, 8)
+
+mini.Name = "minimize"
+mini.Parent = Frame
+mini.BackgroundColor3 = Color3.fromRGB(255, 192, 203)
+mini.Font = Enum.Font.SourceSans
+mini.Size = UDim2.new(0, 45, 0, 28)
+mini.Text = "-"
+mini.TextSize = 40
+mini.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- POSIÇÃO CORRIGIDA: Ao lado do botão 'X' (190 - 45 - 45 = 100)
+mini.Position = UDim2.new(1, -90, 0, -30)
+roundify(mini, 8)
+
+mini2.Name = "minimize2"
+mini2.Parent = Frame
+mini2.BackgroundColor3 = Color3.fromRGB(255, 192, 203)
+mini2.Font = Enum.Font.SourceSans
+mini2.Size = UDim2.new(0, 45, 0, 28)
+mini2.Text = "+"
+mini2.TextSize = 40
+mini2.TextColor3 = Color3.fromRGB(255, 255, 255)
+-- POSIÇÃO CORRIGIDA: Mesmo local do mini, mas invisível
+mini2.Position = UDim2.new(1, -90, 0, -30)
+mini2.Visible = false
+mini2.BackgroundTransparency = 1
+roundify(mini2, 8)
+
+-- --- LÓGICA DE FUNCIONAMENTO (Conexões) ---
+
+-- FECHAR O GUI
+closebutton.MouseButton1Click:Connect(function()
+	main:Destroy()
+end)
+
+-- MINIMIZAR GUI
+mini.MouseButton1Click:Connect(function()
+	resizeFrame(Frame, false)
+	task.wait(0.4)
+	-- Oculta todos os elementos internos, exceto os botões de controle
+	up.Visible = false
+	down.Visible = false
+	onof.Visible = false
+	plus.Visible = false
+	speed.Visible = false
+	mine.Visible = false
+	fade(mini, false)
+	fade(mini2, true)
+end)
+
+-- RESTAURAR GUI
+mini2.MouseButton1Click:Connect(function()
+	resizeFrame(Frame, true)
+	task.wait(0.4)
+	-- Torna os elementos visíveis novamente
+	up.Visible = true
+	down.Visible = true
+	onof.Visible = true
+	plus.Visible = true
+	speed.Visible = true
+	mine.Visible = true
+	fade(mini2, false)
+	fade(mini, true)
+end)
+
+-- FUNÇÃO PRINCIPAL DE VOAR (ON/OFF)
+onof.MouseButton1Down:Connect(function()
+
+	local char = LocalPlayer.Character
+	if not char or not char.Parent then return end -- Garante que o personagem existe
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
+
+	if nowe == true then
+		-- DESLIGA O FLY
+		nowe = false
+
+		-- Desconecta movimentos verticais (apenas para garantir)
+		if tis then tis:Disconnect() tis = nil end
+		if dis then dis:Disconnect() dis = nil end
+
+		-- Limpeza e retorno ao normal
+		local bg = char:FindFirstChildOfClass("BodyGyro")
+		local bv = char:FindFirstChildOfClass("BodyVelocity")
+		if bg then bg:Destroy() end
+		if bv then bv:Destroy() end
+		
+		humanoid.PlatformStand = false
+		
+		-- RE-HABILITA OS ESTADOS BÁSICOS
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, true)
+		
+		humanoid:ChangeState(Enum.HumanoidStateType.Running)
+
+		-- Habilita animação
+		local animate = char:FindFirstChild("Animate")
+		if animate then animate.Disabled = false end
+		
+	else
+		-- LIGA O FLY
+		nowe = true
+		humanoid.PlatformStand = true
+
+		-- Desabilita estados que conflitam
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false) 
+
+		humanoid:ChangeState(Enum.HumanoidStateType.Swimming) -- Para evitar quedas
+
+		-- Desabilita animação
+		local animate = char:FindFirstChild("Animate")
+		if animate then animate.Disabled = true end
+
+        -- REMOVIDO: O loop de Teleport Walk foi removido
+        -- para evitar conflito com a BodyVelocity e garantir
+        -- que a velocidade (speeds) seja aplicada corretamente.
+		
+		-- Lógica do Fly com BodyMovers (para estabilidade e controle da câmera)
+		local torso_part = (humanoid.RigType == Enum.HumanoidRigType.R6 and char:FindFirstChild("Torso")) or char:FindFirstChild("UpperTorso")
+		
+		if torso_part then
+			local bg = Instance.new("BodyGyro", torso_part)
+			bg.P = 9e4
+			bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			bg.cframe = torso_part.CFrame
+			
+			local bv = Instance.new("BodyVelocity", torso_part)
+			bv.velocity = Vector3.new(0,0.1,0)
+			bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			local maxspeed = 50 
+			local current_speed_mult = 0 
+            local base_speed_factor = 10 -- Fator base para o multiplicador de velocidade
+
+			while nowe == true and LocalPlayer.Character and LocalPlayer.Character.Parent and torso_part.Parent do
+				RunService.RenderStepped:Wait()
+				
+				local current_hum = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+				if not current_hum then break end
+				
+				local fwd_back_input = -current_hum.MoveDirection.Z
+				local left_right_input = current_hum.MoveDirection.X
+				
+				local is_moving = (math.abs(fwd_back_input) > 0.01 or math.abs(left_right_input) > 0.01)
+
+				if is_moving then
+                    -- Aceleração horizontal
+					current_speed_mult = current_speed_mult + 0.5 + (current_speed_mult / maxspeed)
+					if current_speed_mult > maxspeed then
+						current_speed_mult = maxspeed
+					end
+				elseif current_speed_mult > 0 then
+                    -- Desaceleração horizontal
+					current_speed_mult = current_speed_mult - 1
+					if current_speed_mult < 0 then
+						current_speed_mult = 0
+					end
+				end
+				
+				local cam_cframe = game.Workspace.CurrentCamera.CoordinateFrame
+				local target_velocity = Vector3.new(0, 0, 0)
+				
+                -- Calcula o vetor de velocidade horizontal
+				if current_speed_mult > 0 then
+					target_velocity = (
+						cam_cframe.lookVector * fwd_back_input +
+						cam_cframe.rightVector * left_right_input
+					) * (current_speed_mult * speeds) -- Multiplica pela velocidade do GUI (speeds)
+				end
+
+                -- INÍCIO DA CORREÇÃO: ADICIONANDO MOVIMENTO VERTICAL
+                local vertical_speed_factor = speeds * base_speed_factor -- Movimento vertical é escalonado por speeds
+                
+                -- Se UP estiver pressionado (tis != nil)
+                if tis then
+                    target_velocity = target_velocity + Vector3.new(0, vertical_speed_factor, 0)
+                end
+                
+                -- Se DOWN estiver pressionado (dis != nil)
+                if dis then
+                    target_velocity = target_velocity + Vector3.new(0, -vertical_speed_factor, 0)
+                end
+                -- FIM DA CORREÇÃO
+
+                -- Aplica a velocidade total
+				bv.velocity = target_velocity
+				bg.cframe = cam_cframe
+			end
+			
+			-- Limpeza
+			if bg and bg.Parent then bg:Destroy() end
+			if bv and bv.Parent then bv:Destroy() end
+		end
+		-- Garante que o estado seja desligado se o loop falhar
+		nowe = false
+		humanoid.PlatformStand = false
+
+	end
+end)
+
+-- CONTROLES DE MOVIMENTO VERTICAL (UP)
+-- Apenas liga/desliga a conexão 'tis'. O movimento é feito no loop principal.
+up.MouseButton1Down:Connect(function()
+	if nowe and not tis then
+		-- A conexão fica ativa enquanto o botão estiver pressionado
+		tis = RunService.Heartbeat:Connect(function() end)
+	end
+end)
+up.MouseButton1Up:Connect(function()
+	if tis then
+		tis:Disconnect()
+		tis = nil
+	end
+end)
+up.MouseLeave:Connect(function()
+	-- Adicionado para garantir que se o mouse sair e o botão ainda estiver pressionado,
+    -- a conexão seja limpa, embora o MouseButton1Up seja o mais comum.
+	if tis then
+		tis:Disconnect()
+		tis = nil
+	end
+end)
+
+
+-- CONTROLES DE MOVIMENTO VERTICAL (DOWN)
+-- Apenas liga/desliga a conexão 'dis'. O movimento é feito no loop principal.
+down.MouseButton1Down:Connect(function()
+	if nowe and not dis then
+		-- A conexão fica ativa enquanto o botão estiver pressionado
+		dis = RunService.Heartbeat:Connect(function() end)
+	end
+end)
+down.MouseButton1Up:Connect(function()
+	if dis then
+		dis:Disconnect()
+		dis = nil
+	end
+end)
+down.MouseLeave:Connect(function()
+	if dis then
+		dis:Disconnect()
+		dis = nil
+	end
+end)
+
+
+-- AUMENTAR VELOCIDADE (+)
+plus.MouseButton1Down:Connect(function()
+	speeds = speeds + 1
+	speed.Text = tostring(speeds)
+end)
+
+-- DIMINUIR VELOCIDADE (-)
+mine.MouseButton1Down:Connect(function()
+	if speeds > 1 then
+		speeds = speeds - 1
+		speed.Text = tostring(speeds)
+	else
+		speed.Text = 'min: 1'
+		task.wait(1)
+		speed.Text = tostring(speeds)
+	end
+end)
+
+-- RECONEXÃO APÓS MORTE DO PERSONAGEM
+LocalPlayer.CharacterAdded:Connect(function(char)
+	task.wait(0.7)
+	local new_hum = char:FindFirstChildOfClass("Humanoid")
+	if new_hum then
+		-- Garante que o personagem não fique preso em PlatformStand ao nascer
+		new_hum.PlatformStand = false
+		-- Garante que o pulo esteja reabilitado ao nascer (caso algo falhe)
+		new_hum:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+		
+		local animate = char:FindFirstChild("Animate")
+		if animate then animate.Disabled = false end
+	end
+	
+	-- Se o fly estava ativo antes de morrer, reativa-o no novo personagem
+	if nowe then
+		nowe = false -- Desliga o estado atual para que o próximo clique ligue
+		onof.MouseButton1Down:Fire()
+	end
+end)
